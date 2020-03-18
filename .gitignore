@@ -4,3 +4,4 @@
 
 /.vs/CrownDetector
 /obj
+/bin/Debug/netcoreapp3.1
