@@ -10,5 +10,7 @@ namespace CrownDetector.Options
         public string Url { get; set; }
         public string Key { get; set; }
         public float Probability { get; set; }
+        public string Url2 { get; set; }
+        public float Probability2 { get; set; }
     }
 }

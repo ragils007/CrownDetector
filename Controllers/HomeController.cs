@@ -14,6 +14,7 @@ using Microsoft.Extensions.Options;
 using CrownDetector.Options;
 using Microsoft.AspNetCore.Hosting;
 using Newtonsoft.Json;
+using System.Drawing;
 
 namespace CrownDetector.Controllers
 {
@@ -39,19 +40,22 @@ namespace CrownDetector.Controllers
         [HttpPost]
         public async Task<IActionResult> MakePredictionRequest(HomeViewModel model)
         {
+            if (model.AttachedFile == null)
+                return View("Index", model); ;
+
             var client = new HttpClient();
 
-            // Request headers - replace this example key with your valid Prediction-Key.
             client.DefaultRequestHeaders.Add("Prediction-Key", _config.Value.Key);
 
-            // Prediction URL - replace this example URL with your valid Prediction URL.
             string url = _config.Value.Url;
 
             HttpResponseMessage response;
 
             var combinedPath = Path.Combine(_hostingEnvironment.WebRootPath, "temp");
-            var fileName = DateTime.Now.ToString("yyyyMMddhhmmss") + model.AttachedFile.FileName;
+            var fileName = "org" + DateTime.Now.ToString("yyyyMMddhhmmss") + model.AttachedFile.FileName;
+            var fileNameNew = DateTime.Now.ToString("yyyyMMddhhmmss") + model.AttachedFile.FileName;
             var filePath = Path.Combine(combinedPath, fileName);
+            var filePathNew = Path.Combine(combinedPath, fileNameNew);
 
             using (var stream = new FileStream(filePath, FileMode.Create))
             {
@@ -59,16 +63,6 @@ namespace CrownDetector.Controllers
             }
 
             byte[] byteData = GetImageAsByteArray(filePath);
-
-            //using (var ms = new MemoryStream())
-            //{
-            //    model.AttachedFile.CopyTo(ms);
-            //    byteData = ms.ToArray();
-            //    //string s = Convert.ToBase64String(fileBytes);
-            //    // act on the Base64 data
-            //}
-
-            // Request body. Try this sample with a locally stored image.
 
             JsonObj result = null;
 
@@ -80,18 +74,72 @@ namespace CrownDetector.Controllers
 
                 result = JsonConvert.DeserializeObject<JsonObj>(res);
             }
-
+            
             var probability = result.Predictions.Where(x => x.TagName == "Pneumonia_Covid19").Select(x => x.Probability).FirstOrDefault();
 
-            if(probability > _config.Value.Probability)
-                model.Result = $"<p class=\"text-danger info\">Uwaga konieczna dodatkowa weryfikacja zdrowia pacjenta</p><img src=\"/temp/{fileName}\" class=\"zdjecie\"/>";
+            if (probability > _config.Value.Probability)
+            {
+                await SecondScan(filePath, filePathNew);
+                model.Result = $"<p class=\"text-danger info\">Uwaga konieczna dodatkowa weryfikacja zdrowia pacjenta</p><img src=\"/temp/{fileNameNew}\" class=\"zdjecie\"/>";
+            }
             else
+            {
                 model.Result = $"<img src=\"/temp/{fileName}\"/>";
+            }
 
             model.Procent = Math.Round(((decimal)probability * 100m) / 1m, 2);
 
             return View("Index", model);
         }
+
+        private async Task SecondScan(string filePath, string filePathNew)
+        {
+            var client = new HttpClient();
+
+            client.DefaultRequestHeaders.Add("Prediction-Key", _config.Value.Key);
+
+            string url = _config.Value.Url2;
+
+            HttpResponseMessage response;
+
+            byte[] byteData = GetImageAsByteArray(filePath);
+
+            JsonObj2 result = null;
+
+            using (var content = new ByteArrayContent(byteData))
+            {
+                content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+                response = await client.PostAsync(url, content);
+                var res = await response.Content.ReadAsStringAsync();
+
+                result = JsonConvert.DeserializeObject<JsonObj2>(res);
+            }
+
+            Bitmap originalBmp = (Bitmap)Image.FromFile(filePath);
+
+            Bitmap tempBitmap = new Bitmap(originalBmp, originalBmp.Width, originalBmp.Height);
+
+            using (Graphics g = Graphics.FromImage(tempBitmap))
+            {
+                var photoW = originalBmp.Width;
+                var photoH = originalBmp.Height;
+                Pen redPen = new Pen(Color.Red, 3);
+                var points = result.predictions.ToList();
+                foreach (var point in points.Where(x => x.probability > _config.Value.Probability2).ToList())
+                {
+                    int x = Convert.ToInt32(photoW*point.boundingBox.left);
+                    int y = Convert.ToInt32(photoH*point.boundingBox.top);
+                    int w = Convert.ToInt32(photoW*point.boundingBox.width);
+                    int h = Convert.ToInt32(photoH*point.boundingBox.height);
+                    Rectangle rect = new Rectangle(x, y, w, y);
+                    g.DrawRectangle(redPen, rect);
+                }
+            }
+
+            Image image = (Image)tempBitmap;
+            image.Save(filePathNew);
+        }
+
         private static byte[] GetImageAsByteArray(string imageFilePath)
         {
             FileStream fileStream = new FileStream(imageFilePath, FileMode.Open, FileAccess.Read);
@@ -115,5 +163,30 @@ namespace CrownDetector.Controllers
         public string TagId { get; set; }
         public string TagName { get; set; }
         public float Probability { get; set; }
+    }
+
+    public class JsonObj2
+    {
+        public string id { get; set; }
+        public string project { get; set; }
+        public string iteration { get; set; }
+        public string created { get; set; }
+        public List<JsonPoints> predictions { get; set; }
+    }
+
+    public class JsonPoints
+    {
+        public float probability { get; set; }
+        public string tagId { get; set; }
+        public string tagName { get; set; }
+        public JsonPoint boundingBox { get; set; }
+    }
+
+    public class JsonPoint
+    {
+        public float left { get; set; }
+        public float top { get; set; }
+        public float width { get; set; }
+        public float height { get; set; }
     }
 }
