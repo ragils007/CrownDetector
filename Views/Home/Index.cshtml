@@ -11,7 +11,7 @@
         </div>
         <button type="submit" class="btn btn-primary float-right">Wyślij</button>
     </form>
-    <p>Wynik:</p>
+    <p>Wynik (@Model?.Procent%):</p>
     @if (Model != null)
     {@Html.Raw(Model.Result)}
 </div>

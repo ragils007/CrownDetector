@@ -84,9 +84,11 @@ namespace CrownDetector.Controllers
             var probability = result.Predictions.Where(x => x.TagName == "Pneumonia_Covid19").Select(x => x.Probability).FirstOrDefault();
 
             if(probability > _config.Value.Probability)
-                model.Result = $"<p class=\"text-danger\">Uwaga konieczna dodatkowa weryfikacja zdrowia pacjenta</p><img src=\"/temp/{fileName}\" class=\"zdjecie\"/>";
+                model.Result = $"<p class=\"text-danger info\">Uwaga konieczna dodatkowa weryfikacja zdrowia pacjenta</p><img src=\"/temp/{fileName}\" class=\"zdjecie\"/>";
             else
                 model.Result = $"<img src=\"/temp/{fileName}\"/>";
+
+            model.Procent = Math.Round(((decimal)probability * 100m) / 1m, 2);
 
             return View("Index", model);
         }

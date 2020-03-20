@@ -10,5 +10,6 @@ namespace CrownDetector.Models
     {
         public IFormFile AttachedFile { get; set; }
         public string Result { get; set; }
+        public decimal Procent { get; set; }
     }
 }
