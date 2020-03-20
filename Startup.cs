@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using CrownDetector.Options;
 using CrownDetector.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
@@ -50,6 +51,7 @@ namespace CrownDetector
 
             services.AddIdentityCore<AppUser>();
             services.AddScoped<IAccountService, AccountService>();
+            services.Configure<PredictionAPI>(Configuration.GetSection("PredictionAPI"));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
