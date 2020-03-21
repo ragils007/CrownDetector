@@ -1,0 +1,30 @@
+﻿@model ListViewModel
+@{
+    ViewData["Title"] = "Lista";
+}
+
+<div>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Firs Name</th>
+                <th>Last Name</th>
+                <th>Id</th>
+                <th>Description</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var el in Model.ListItems)
+            {
+                <tr>
+                    <td>@el.Imie</td>
+                    <td>@el.Nazwisko</td>
+                    <td>@el.Pesel</td>
+                    <td>@el.Opis</td>
+                    <td>@el.Data_po</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

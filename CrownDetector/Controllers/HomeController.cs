@@ -177,6 +177,27 @@ namespace CrownDetector.Controllers
             return binaryReader.ReadBytes((int)fileStream.Length);
         }
 
+        public IActionResult Lista()
+        {
+            var model = new ListViewModel();
+
+            using (var cc = CC.GetCorona())
+            {
+                var dataList = cc.Cnn.Query<corona>("SELECT * FROM corona").ToList();
+
+                model.ListItems = dataList.Select(x => new ListItem()
+                {
+                    Imie = x.imie,
+                    Nazwisko = x.nazwisko,
+                    Opis = x.opis,
+                    Pesel = x.pesel,
+                    Data_po = x.data_po
+                }).ToList();
+            }
+
+            return View(model);
+        }
+
     }
 
     public class JsonObj
