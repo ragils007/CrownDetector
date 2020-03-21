@@ -9,22 +9,22 @@ namespace CrownDetector.Models
 {
     public class HomeViewModel
     {
-        [Display(Name = "Imię")]
-        [Required(ErrorMessage = "Pole wymagane")]
+        [Display(Name = "First name")]
+        [Required(ErrorMessage = "Required field")]
         public string Imie { get; set; }
-        [Display(Name = "Nazwisko")]
-        [Required(ErrorMessage = "Pole wymagane")]
+        [Display(Name = "Last name")]
+        [Required(ErrorMessage = "Required field")]
         public string Nazwisko { get; set; }
         [Display(Name = "Pesel")]
-        [Required(ErrorMessage = "Pole wymagane")]
+        [Required(ErrorMessage = "Required field")]
         public string Pesel { get; set; }
-        [Display(Name = "Opis")]
-        [Required(ErrorMessage = "Pole wymagane")]
+        [Display(Name = "Description")]
+        [Required(ErrorMessage = "Required field")]
         public string Opis { get; set; }
-        [Display(Name = "Data")]
-        [Required(ErrorMessage = "Pole wymagane")]
+        [Display(Name = "Date")]
+        [Required(ErrorMessage = "Required field")]
         public DateTime Data_po { get; set; }
-        [Required(ErrorMessage = "Pole wymagane")]
+        [Required(ErrorMessage = "Required field")]
         public IFormFile AttachedFile { get; set; }
         public string Result { get; set; }
         public string Src { get; set; }

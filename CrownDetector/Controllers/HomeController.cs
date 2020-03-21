@@ -87,7 +87,7 @@ namespace CrownDetector.Controllers
             {
                 await SecondScan(filePath, filePathNew);
                 czyWykryto = true;
-                model.Result = $"<p class=\"text-danger info\">Uwaga konieczna dodatkowa weryfikacja zdrowia pacjenta</p>";
+                model.Result = $"<p class=\"text-danger info\">Additional patient health verification required </p>";
                 model.Src = $"/temp/{fileNameNew}";
                 model.Class = "zdjecie";
             }

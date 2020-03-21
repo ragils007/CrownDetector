@@ -23,17 +23,17 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Upload a X-ray</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Lista">List</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Lista">Patient List</a>
                         </li>
                     </ul>
                 </div>
                 @if (User.Identity.IsAuthenticated)
                 {
                     <span style="padding-right: 5px;">@User.Identity.Name</span>
-                    <span><a asp-controller="Account" asp-action="Logout">Wyloguj</a></span>
+                    <span><a asp-controller="Account" asp-action="Logout">Log out</a></span>
                 }
             </div>
         </nav>
