@@ -15,7 +15,7 @@ namespace CrownDetector
         public static void Main(string[] args)
         {
             // Sample DB usage
-            new DBSample().ProcessCorona();
+            //new DBSample().ProcessCorona();
 
             CreateWebHostBuilder(args).Build().Run();
         }

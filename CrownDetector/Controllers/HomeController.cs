@@ -15,6 +15,8 @@ using CrownDetector.Options;
 using Microsoft.AspNetCore.Hosting;
 using Newtonsoft.Json;
 using System.Drawing;
+using CrownDetector.DB;
+using Msdfa.Data.Raw;
 
 namespace CrownDetector.Controllers
 {
@@ -41,7 +43,9 @@ namespace CrownDetector.Controllers
         public async Task<IActionResult> MakePredictionRequest(HomeViewModel model)
         {
             if (model.AttachedFile == null)
-                return View("Index", model); ;
+                return View("Index", model);
+
+            
 
             var client = new HttpClient();
 
@@ -77,14 +81,40 @@ namespace CrownDetector.Controllers
             
             var probability = result.Predictions.Where(x => x.TagName == "Pneumonia_Covid19").Select(x => x.Probability).FirstOrDefault();
 
+            var czyWykryto = false;
+
             if (probability > _config.Value.Probability)
             {
                 await SecondScan(filePath, filePathNew);
-                model.Result = $"<p class=\"text-danger info\">Uwaga konieczna dodatkowa weryfikacja zdrowia pacjenta</p><img src=\"/temp/{fileNameNew}\" class=\"zdjecie\"/>";
+                czyWykryto = true;
+                model.Result = $"<p class=\"text-danger info\">Uwaga konieczna dodatkowa weryfikacja zdrowia pacjenta</p>";
+                model.Src = $"/temp/{fileNameNew}";
+                model.Class = "zdjecie";
             }
             else
             {
-                model.Result = $"<img src=\"/temp/{fileName}\"/>";
+                model.Src = $"/temp/{fileName}";
+                model.Class = "";
+            }
+
+            using (var cc = CC.GetCorona())
+            {
+                var img = System.IO.File.ReadAllBytes(filePath);
+                byte[] img2 = null;
+                if(czyWykryto)
+                    img2 = System.IO.File.ReadAllBytes(filePathNew);
+
+                var newItem = new corona
+                {
+                    imie = model.Imie,
+                    nazwisko = model.Nazwisko,
+                    pesel = model.Pesel,
+                    opis = model.Opis,
+                    data_po = model.Data_po,
+                    foto = img,
+                    foto_marked = img2,
+                };
+                newItem.Save(cc.Cnn);
             }
 
             model.Procent = Math.Round(((decimal)probability * 100m) / 1m, 2);

@@ -3,25 +3,63 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <form asp-action="MakePredictionRequest" asp-controller="Home" method="post" enctype="multipart/form-data">
-        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-        <div class="form-group">
-            <label asp-for="Imie"></label>
-            <input asp-for="Imie" class="form-control">
-            <span asp-validation-for="Imie" class="text-danger"></span>
-        </div>
-        <div class="form-group" id="costDiv">
-            <label asp-for="Nazwisko"></label>
-            <input asp-for="Nazwisko" class="form-control" />
-            <span asp-validation-for="Nazwisko" class="text-danger"></span>
-        </div>
-        <div class="form-group">
-            <input asp-for="AttachedFile" class="form-control-file" />
-        </div>
-        <button type="submit" class="btn btn-primary float-right">Wyślij</button>
-    </form>
-    <p>Wynik (@Model?.Procent%):</p>
-    @if (Model != null)
-    {@Html.Raw(Model.Result)}
-</div>
+    <div class="text-center">
+        <form asp-action="MakePredictionRequest" asp-controller="Home" method="post" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="row">
+                <div class="col">
+                    <div class="form-group">
+                        <label asp-for="Imie"></label>
+                        <input asp-for="Imie" class="form-control">
+                        <span asp-validation-for="Imie" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Nazwisko"></label>
+                        <input asp-for="Nazwisko" class="form-control" />
+                        <span asp-validation-for="Nazwisko" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Pesel"></label>
+                        <input asp-for="Pesel" class="form-control" />
+                        <span asp-validation-for="Pesel" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="form-group">
+                        <label asp-for="Data_po"></label>
+                        <input asp-for="Data_po" class="form-control" type="date" />
+                        <span asp-validation-for="Data_po" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Opis"></label>
+                        <textarea asp-for="Opis" class="form-control" style="height: 121px;"></textarea>
+                        <span asp-validation-for="Opis" class="text-danger"></span>
+                    </div>
+
+                </div>
+            </div>
+            <div class="form-group">
+                <input asp-for="AttachedFile" class="form-control-file" />
+                <span asp-validation-for="AttachedFile" class="text-danger"></span>
+            </div>
+            <button type="submit" class="btn btn-primary float-right">Wyślij</button>
+        </form>
+        <p>Wynik (@Model?.Procent%):</p>
+        @if (Model != null)
+        {
+            @Html.Raw(Model?.Result)
+            <div id="image-gallery-3" class="cf  @Model?.Class">
+                <img src="@Model.Src" data-high-res-src="@Model.Src" alt="" class="pannable-image">
+
+            </div>
+        }
+    </div>
+
+@section Scripts
+{
+    <script>
+        $(function () {
+    $('.pannable-image').ImageViewer();
+});
+    </script>
+}
