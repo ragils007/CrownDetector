@@ -17,6 +17,7 @@ using Newtonsoft.Json;
 using System.Drawing;
 using CrownDetector.DB;
 using Msdfa.Data.Raw;
+using System.Text;
 
 namespace CrownDetector.Controllers
 {
@@ -191,7 +192,8 @@ namespace CrownDetector.Controllers
                     Nazwisko = x.nazwisko,
                     Opis = x.opis,
                     Pesel = x.pesel,
-                    Data_po = x.data_po
+                    Data_po = x.data_po,
+                    PhotoSrc = (x.foto_marked == null) ? Convert.ToBase64String(x.foto) : Convert.ToBase64String(x.foto_marked)
                 }).ToList();
             }
 

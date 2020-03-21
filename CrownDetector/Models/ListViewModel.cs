@@ -17,5 +17,6 @@ namespace CrownDetector.Models
         public string Pesel { get; set; }
         public string Opis { get; set; }
         public DateTime Data_po { get; set; }
+        public string PhotoSrc { get; set; }
     }
 }
