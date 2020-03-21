@@ -42,9 +42,9 @@
                 <input asp-for="AttachedFile" class="form-control-file" />
                 <span asp-validation-for="AttachedFile" class="text-danger"></span>
             </div>
-            <button type="submit" class="btn btn-primary float-right">Wyślij</button>
+            <button type="submit" class="btn btn-primary float-right">Send</button>
         </form>
-        <p>Wynik (@Model?.Procent%):</p>
+        <p>Score (@Model?.Procent%):</p>
         @if (Model != null)
         {
             @Html.Raw(Model?.Result)
