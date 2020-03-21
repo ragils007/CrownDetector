@@ -9,3 +9,7 @@
 *.jpg
 *.jpeg
 *.gif20200320055107
+/CrownDetector/bin/Debug/netcoreapp3.1
+/CrownDetector/obj
+/Msdfa.Core/bin/Debug/netcoreapp3.1
+/Msdfa.Core/obj
