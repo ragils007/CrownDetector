@@ -93,7 +93,7 @@ namespace Msdfa.Core.Base
             var insertSql = $"INSERT INTO {this.TableName} ({string.Join(',', propList) }) VALUES ({string.Join(',', propList.Select(x => $":{x}"))})";
 
             var query = cnn.Query(insertSql);
-            foreach (var item in propList) query.Bind(item, this.PropertyValueDict[item].NewValue);
+            foreach (var item in propList) query.Bind(item, this.PropertyValueDict[item].NewValue, this.TypeDetails.PropertyInfoDict[item].PropertyType);
             var newId = query.ExecuteReturning(new Dictionary<string, Type>() { { "id", typeof(long) } });
             this.Parent.SetId(newId["id"]);
 

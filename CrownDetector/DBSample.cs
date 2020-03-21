@@ -20,7 +20,7 @@ namespace CrownDetector
 
                 // Pobranie pojedynczego rekordu
                 var dataItem = cc.Cnn.Query<corona>("SELECT * FROM corona WHERE id = :id")
-                    .Bind("id", 1)
+                    .Bind("id", 1, typeof(Int64))
                     .FetchItem();
 
                 // Dodanie nowego rekordu
@@ -35,7 +35,6 @@ namespace CrownDetector
                     opis = "Dobry gość",
                     data_po = new DateTime(1978, 1, 1),
                     foto = img,
-                    foto_marked = img2,
                 };
                 newItem.Save(cc.Cnn);
             }

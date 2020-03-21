@@ -9,9 +9,9 @@ namespace Msdfa.DB
     {
         string QueryString { get; set; }
         Query.QueryType Type { get; set; }
-        Dictionary<string, object> BindValues { get; set; }
+        Dictionary<string, (object value, Type dataType)> BindValues { get; set; }
 
-        IQuery Bind(string varName, object varValue);
+        IQuery Bind(string varName, object varValue, Type dataType = null);
         IQuery BindIf(bool isTrue, string varName, object varValue);
         IQuery BindListIn<TDataType>(string varName, List<TDataType> varValues);
         IQuery BindListInIf(bool isTrue, string varName, List<object> varValues);

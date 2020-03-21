@@ -18,7 +18,7 @@ namespace Msdfa.DB
             Update
         }
 
-        public Dictionary<string, object> BindValues { get; set; }
+        public Dictionary<string, (object value, Type dataType)> BindValues { get; set; }
         protected internal Dictionary<string, Type> ReturningColumns;
 
         public Query(IDatabase db, string queryString = null)
@@ -26,7 +26,7 @@ namespace Msdfa.DB
             Db = db;
             Type = QueryType.Default;
             QueryTable = null;
-            BindValues = new Dictionary<string, object>();
+            BindValues = new Dictionary<string, (object, Type)>();
             PKSequence = null;
             ReturningColumns = new Dictionary<string, Type>();
             QueryString = queryString;
@@ -63,11 +63,11 @@ namespace Msdfa.DB
         //   this.Type = type;
         //}
 
-        public IQuery Bind(string varName, object varValue)
+        public IQuery Bind(string varName, object varValue, Type dataType = null)
         {
             if (varValue == null)
             {
-                BindValues.Add(varName, null);
+                BindValues.Add(varName, (null, dataType));
                 return this;
             }
 
@@ -85,7 +85,7 @@ namespace Msdfa.DB
                 varValue = Convert.ToBoolean(varValue) ? 1 : 0;
             }
 
-            BindValues.Add(varName, varValue);
+            BindValues.Add(varName, (varValue, dataType));
             return this;
         }
 
@@ -159,7 +159,7 @@ namespace Msdfa.DB
         {
             lock (Db)
             {
-                return Db.Fetch(QueryString, new Dictionary<string, object>(BindValues));
+                return Db.Fetch(QueryString, new Dictionary<string, (object, Type)>(BindValues));
             }
         }
 
@@ -167,13 +167,13 @@ namespace Msdfa.DB
         {
             lock (Db)
             {
-                return Db.Fetch(QueryString, commandTimeout, new Dictionary<string, object>(BindValues));
+                return Db.Fetch(QueryString, commandTimeout, new Dictionary<string, (object, Type)>(BindValues));
             }
         }
 
         public async Task<DataTable> FetchAsync(CancellationToken cancellationToken)
         {
-            return await Db.FetchAsync(QueryString, cancellationToken, new Dictionary<string, object>(BindValues)).ConfigureAwait(false);
+            return await Db.FetchAsync(QueryString, cancellationToken, new Dictionary<string, (object, Type)>(BindValues)).ConfigureAwait(false);
         }
 
         public List<TDataType> FetchAs<TDataType>(Func<MyDataRow, TDataType> selector)
@@ -185,7 +185,7 @@ namespace Msdfa.DB
         {
             lock (Db)
             {
-                return Db.FetchRow(QueryString, new Dictionary<string, object>(BindValues));
+                return Db.FetchRow(QueryString, new Dictionary<string, (object, Type)>(BindValues));
             }
         }
 
@@ -193,7 +193,7 @@ namespace Msdfa.DB
         {
             lock (Db)
             {
-                return Db.FetchValue(QueryString, new Dictionary<string, object>(BindValues));
+                return Db.FetchValue(QueryString, new Dictionary<string, (object, Type)>(BindValues));
             }
         }
 
@@ -201,7 +201,7 @@ namespace Msdfa.DB
         {
             lock (Db)
             {
-                var ret = Db.FetchValue(QueryString, new Dictionary<string, object>(BindValues));
+                var ret = Db.FetchValue(QueryString, new Dictionary<string, (object, Type)>(BindValues));
                 var cast = (T)Convert.ChangeType(ret, typeof(T));
 
                 return cast;
@@ -212,7 +212,7 @@ namespace Msdfa.DB
         {
             lock (Db)
             {
-                return Db.FetchCursor(QueryString, new Dictionary<string, object>(BindValues));
+                return Db.FetchCursor(QueryString, new Dictionary<string, (object, Type)>(BindValues));
             }
         }
 
@@ -220,7 +220,7 @@ namespace Msdfa.DB
         {
             lock (Db)
             {
-                return Db.Execute(QueryString, new Dictionary<string, object>(BindValues));
+                return Db.Execute(QueryString, new Dictionary<string, (object, Type)>(BindValues));
             }
         }
 
@@ -234,7 +234,7 @@ namespace Msdfa.DB
         {
             lock (Db)
             {
-                return Db.Insert(QueryString, new Dictionary<string, object>(BindValues));
+                return Db.Insert(QueryString, new Dictionary<string, (object, Type)>(BindValues));
             }
         }
 
@@ -307,7 +307,7 @@ namespace Msdfa.DB
             {
                 if (PKValues == null) throw new Exception("PKValues not set. Bulk updating not supported.");
 
-                var bindValuesList = new Dictionary<string, object>(BindValues);
+                var bindValuesList = new Dictionary<string, (object, Type)>(BindValues);
 
                 query = "UPDATE " + QueryTable + " SET ";
 
@@ -342,14 +342,14 @@ namespace Msdfa.DB
         protected internal string DisplayArgs(params object[] args)
         {
             if (args.Length == 0) return "";
-            if (args[0].GetType() == typeof (Dictionary<string, object>))
+            if (args[0].GetType() == typeof (Dictionary<string, (object, Type)>))
             {
-                return BindValuesString((Dictionary<string, object>) args[0]);
+                return BindValuesString((Dictionary<string, (object, Type)>) args[0]);
             }
             return "['" + string.Join("', '", args) + "'] ";
         }
 
-        protected string BindValuesString(Dictionary<string, object> dict)
+        protected string BindValuesString(Dictionary<string, (object, Type)> dict)
         {
             return dict.Count > 0
                 ? "[" + string.Join(", ", dict.Select(x => "'" + x.Key + "'->'" + x.Value + "'")) + "] "

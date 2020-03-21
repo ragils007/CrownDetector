@@ -570,7 +570,7 @@ namespace Msdfa.DB
                 foreach (var item in query.ReturningColumns)
                 {
                     if (cmd.Parameters.Contains(item.Key)) cmd.Parameters[item.Key].Direction = ParameterDirection.InputOutput;
-                    else cmd.Parameters.Add(new NpgsqlParameter(item.Key, GetPgsqlDbType(item.Value)) { Direction = ParameterDirection.Output });
+                    else cmd.Parameters.Add(new NpgsqlParameter(item.Key, GetDbTypeFromObject(item.Value)) { Direction = ParameterDirection.Output });
                 }
 
                 cmd.ExecuteScalar();
@@ -660,20 +660,20 @@ namespace Msdfa.DB
         /// </summary>
         /// <param name="cmd">Zapytanie SQL</param>
         /// <param name="args">Parametry</param>
-        private void ProcessParameters(NpgsqlCommand cmd, params object[] args)
+        private void ProcessParameters(NpgsqlCommand cmd, object[] args)
         {
             if (args.Length > 0)
             {
                 /**
                  * Dla argumentów przekazywanych w formie: Dictionary<string, object>
                  */
-                if (args[0].GetType() == typeof(Dictionary<string, object>))
+                if (args[0].GetType() == typeof(Dictionary<string, (object, Type)>))
                 {
                     // cmd.BindByName = true;
 
-                    foreach (var dict in (Dictionary<string, object>)args[0])
+                    foreach (var dict in (Dictionary<string, (object value, Type dataType)>)args[0])
                     {
-                        var type = dict.Value?.GetType();
+                        var type = dict.Value.dataType ?? dict.Value.value?.GetType();
 
                         // 2016-07-22: Denis Trzeciok, obsługa bindowania tablic do bulkowych insertów
                         //      BZ: w przypadku byte[] mamy do czynienia z danymi binarnymi - ignorujemy
@@ -684,10 +684,10 @@ namespace Msdfa.DB
                         // }
 
                         // Na niektórych systemach bindowanie pól typu CLOB powodowało błędy. Trzeba ustawić kierunek InputOutput
-                        var pgsqlType = GetPgsqlDbType(dict.Value);
+                        var pgsqlType = GetDbTypeFromObject(dict.Value.value);
                         // if (pgsqlType == DbType.String && dict.Key.EndsWith("_CLOB")) pgsqlType = DbType.;
 
-                        var param = new NpgsqlParameter(dict.Key, pgsqlType) { Value = dict.Value == null ? DBNull.Value : dict.Value };
+                        var param = new NpgsqlParameter(dict.Key, pgsqlType) { Value = dict.Value.value == null ? DBNull.Value : dict.Value.value };
                         // if (pgsqlType == DbType.Clob) param.Direction = ParameterDirection.InputOutput;
                         cmd.Parameters.Add(param);
                     }
@@ -697,7 +697,7 @@ namespace Msdfa.DB
                     int paramNo = 0;
                     foreach (object arg in args)
                     {
-                        var parameter = new NpgsqlParameter(paramNo.ToString(), GetPgsqlDbType(arg));
+                        var parameter = new NpgsqlParameter(paramNo.ToString(), GetDbTypeFromObject(arg));
                         parameter.Value = arg;
                         cmd.Parameters.Add(parameter);
                         paramNo++;
@@ -706,7 +706,7 @@ namespace Msdfa.DB
             }
         }
 
-        private void ProcessParameters(NpgsqlCommand cmd, Dictionary<string, object> args)
+        private void ProcessParameters(NpgsqlCommand cmd, Dictionary<string, (object value, Type dataType)> args)
         {
             // cmd.BindByName = true;
             foreach (var dict in args)
@@ -715,16 +715,24 @@ namespace Msdfa.DB
                 if (cmd.Parameters.Contains(dict.Key)) (cmd.Parameters[dict.Key]).Value = dict.Value;
                 else
                 {
-                    var param = new NpgsqlParameter(dict.Key, GetPgsqlDbType(dict.Value)) { Value = dict.Value ?? DBNull.Value };
+                    NpgsqlParameter param;
+
+                    if (dict.Value.dataType == null)
+                    {
+                        param = new NpgsqlParameter(dict.Key, GetDbTypeFromObject(dict.Value.value)) { Value = dict.Value.value ?? DBNull.Value };
+                    }
+                    else
+                    {
+                        param = new NpgsqlParameter(dict.Key, GetDbTypeFromType(dict.Value.dataType)) { Value = dict.Value.value ?? DBNull.Value };
+                    }
+
                     cmd.Parameters.Add(param);
                 }
             }
         }
 
-        public static DbType GetPgsqlDbType(object o)
+        public static DbType GetDbTypeFromObject(object o)
         {
-            // 2016-07-22: Denis Trzeciok - obsługa bindowania tablic
-            //      BZ: Poprawka - byte => Blob
             var type = o?.GetType();
 
             if (type?.IsArray ?? false == true)
@@ -760,10 +768,11 @@ namespace Msdfa.DB
             if (o is double) return DbType.Double;
             if (o is byte[]) return DbType.Binary;
             if (o is bool) return DbType.Boolean;
+
             return DbType.String;
         }
 
-        public static DbType GetDbType(Type t)
+        public static DbType GetDbTypeFromType(Type t)
         {
             if (t == typeof(string)) return DbType.String;
             if (t == typeof(DateTime)) return DbType.Date;
@@ -842,47 +851,6 @@ namespace Msdfa.DB
         public DateTime GetDBTime()
         {
             throw new NotImplementedException();
-
-            // var time = this.FetchValue(@"SELECT SYSDATE FROM DUAL");
-            // return (DateTime)time;
         }
-
-        /*
-         * Nowy eksperymentalny interfejs budowania zapytań
-         */
-        //private string QueryString;
-        //private Dictionary<string, object> BindValues = new Dictionary<string, object>();
-
-        //public IDatabase Query(string query)
-        //{
-        //   BindValues.Clear();
-        //   this.QueryString = query;
-        //   return this;
-        //}
-        //public IDatabase Bind(string varName, object varValue)
-        //{
-        //   this.BindValues.Add(varName, varValue);
-        //   return this;
-        //}
-        //public DataTable Fetch()
-        //{
-        //   return this.Fetch(this.QueryString, this.BindValues);
-        //}
-        //public DataRow FetchRow()
-        //{
-        //   return this.FetchRow(this.QueryString, this.BindValues);
-        //}
-        //public object FetchValue()
-        //{
-        //   return this.FetchValue(this.QueryString, this.BindValues);
-        //}
-        //public IDataReader FetchCursor()
-        //{
-        //   return this.FetchCursor(this.QueryString, this.BindValues);
-        //}
-        //public int Execute()
-        //{
-        //   return this.Execute(this.QueryString, this.BindValues);
-        //}
     }
 }

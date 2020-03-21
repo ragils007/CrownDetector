@@ -38,9 +38,9 @@ namespace Msdfa.Core.DB
 
         public QueryTyped(IDatabase db, string queryString = null) : base(db, queryString) { }
 
-        public QueryTyped<TDataType> Bind<TVariableType>(string varName, TVariableType varValue)
+        public QueryTyped<TDataType> Bind<TVariableType>(string varName, TVariableType varValue, Type varDataType = null)
         {
-            base.Bind(varName, varValue);
+            base.Bind(varName, varValue, varDataType);
             return this;
         }
 
