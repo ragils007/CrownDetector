@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics;
 using System.Text;
 
@@ -17,6 +18,7 @@ namespace Msdfa.Data.Raw
         public string nazwisko { get; set; }
         public string pesel { get; set; }
         public string telefon { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public DateTime data_w { get; set; }
         public DateTime data_po { get; set; }
         public string opis { get; set; }

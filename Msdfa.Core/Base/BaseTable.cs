@@ -166,6 +166,7 @@ namespace Msdfa.Core.Base
                 PropertyInfoWritableDict = props
                     .Where(x => x.CanWrite)
                     .Where(x => !x.GetCustomAttributes(typeof(NotMappedAttribute), false).Any())
+                    .Where(x => !x.GetCustomAttributes(typeof(DatabaseGeneratedAttribute), false).Any())
                     .ToDictionary(x => x.Name, x => x),
                 Type = typeof(T)
             };
